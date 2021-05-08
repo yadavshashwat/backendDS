@@ -10,13 +10,14 @@ class Vendor(BaseModel):
     owner_phone = models.IntegerField(null=False)
     contact_name = models.CharField(max_length=100,null=True)
     contact_phone = models.IntegerField(null=True)
-    email = models.CharField(max_length=150,null=True)
-    city = models.CharField(max_length=150,null=True)
+    email = models.EmailField(null=True)
     address = models.CharField(max_length=300,null=True)
+    city = models.CharField(max_length=150,null=True)
+    state = models.CharField(max_length=150,null=True)
     pincode = models.IntegerField(null=True)
     source = models.CharField(max_length=100,null=True)
     def __str__(self):
-        return json.dumps({'id':self.id,'name':self.name})
+        return json.dumps({'id':self.id,'name':self.company_name})
 
 
 

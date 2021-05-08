@@ -1,5 +1,5 @@
 from vendormgmt.models import Vendor
-from django.shortcuts import render
+# from django.shortcuts import render
 from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
@@ -17,16 +17,17 @@ class vendorMgmt:
         dataObjectFriendlyName = "Vendor"
         dataObjectFilterList = {}
         dataObjectSerializer = VendorSerializer  
+        natural_key = 'company_name'
         # to update - end
 
         if request.method == 'GET':
             objects = dataObject.objects.all()
 
             # to update filters - start
-            name = request.GET.get('name', None)
-            if name is not None:
-                objects = objects.filter(name__icontains=name)
-            
+            company_name = request.GET.get('company_name', None)
+            if company_name is not None:
+                objects = objects.filter(company_name__icontains=company_name)
+
             # to update filters - end
 
             # Setting up pagination
@@ -52,58 +53,67 @@ class vendorMgmt:
     
         elif request.method == 'POST':
             object_data = JSONParser().parse(request)
-            # to update - case change - start
+            
+            count = 0 
             try:
-                object_data['name'] = cleanstring(object_data['name'].lower())
-                object_data['address'] = cleanstring(object_data['address'].lower())
-                object_data['city'] = cleanstring(object_data['city'].lower())
-                object_data['state'] = cleanstring(object_data['state'].lower())
+                count = dataObject.objects.filter(company_name = cleanstring(object_data[natural_key]).lower()).count()     
             except:
-                None
-                
-            # to update - case change - end
+                count = 1
+
             object_serializer = dataObjectSerializer(data=object_data)
             
-            if object_serializer.is_valid():
-                object_serializer.save()
-                success = True
-                message = dataObjectFriendlyName + " Created!"
-                data = object_serializer.data
-                obj= {
-                    'success':True,
-                    'message':message,
-                    'data': data
-                }
-                return JsonResponse(obj, status=status.HTTP_201_CREATED) 
-            
+            if count == 0:
+                if object_serializer.is_valid():
+                    object_serializer.save()
+                    success = True
+                    message = dataObjectFriendlyName + " Created!"
+                    data = object_serializer.data
+                    obj= {
+                        'success':True,
+                        'message':message,
+                        'data': data
+                    }
+                    return JsonResponse(obj, status=status.HTTP_201_CREATED) 
+                
+                else:
+                    success = False
+                    message = "Invalid Serializer!"
+                    errors = object_serializer.errors
+                    obj = {
+                        'success':success,
+                        'message': message,
+                        'errors': errors
+                    }
+                    return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
             else:
                 success = False
-                message = "Invalid Serializer!"
-                errors = object_serializer.errors
+                message = dataObjectFriendlyName + " Already Exists!"
+                errors = []
                 obj = {
                     'success':success,
                     'message': message,
                     'errors': errors
                 }
                 return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+
         
-        # elif request.method == 'DELETE':
-        #     count = dataObject.objects.all().delete()
-        #     success = True
-        #     message = ('{} '+ dataObjectFriendlyName  + ' were deleted successfully!').format(count[0])
-        #     obj= {
-        #         'success':True,
-        #         'message': message
-        #         }
-        #     return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
+        elif request.method == 'DELETE':
+            count = dataObject.objects.all().delete()
+            success = True
+            message = ('{} '+ dataObjectFriendlyName  + ' were deleted successfully!').format(count[0])
+            obj= {
+                'success':True,
+                'message': message
+                }
+            return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
 
     @api_view(['GET', 'PUT', 'DELETE'])
     def object_detail_v1(request, id):
         
         # to update - start
-        dataObject = Hospital
-        dataObjectFriendlyName = "Hospital"
-        dataObjectSerializer = HospitalSerializer    
+        dataObject = Vendor
+        dataObjectFriendlyName = "Vendor"
+        dataObjectSerializer = VendorSerializer    
         # to update - end
 
         try: 
