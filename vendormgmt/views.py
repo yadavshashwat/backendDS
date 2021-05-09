@@ -58,7 +58,7 @@ class vendorMgmt:
             try:
                 count = dataObject.objects.filter(company_name = cleanstring(object_data[natural_key]).lower()).count()     
             except:
-                count = 1
+                count = -1
 
             object_serializer = dataObjectSerializer(data=object_data)
             
@@ -85,6 +85,19 @@ class vendorMgmt:
                         'errors': errors
                     }
                     return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+
+            elif count == -1:
+                success = False
+                message = dataObjectFriendlyName + " Search Error!"
+                errors = []
+                obj = {
+                    'success':success,
+                    'message': message,
+                    'errors': errors
+                }
+                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+
+
             else:
                 success = False
                 message = dataObjectFriendlyName + " Already Exists!"
