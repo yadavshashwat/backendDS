@@ -32,7 +32,6 @@ class ItemSerializerIn(serializers.ModelSerializer):
         except ValueError:
             raise serializers.ValidationError('You must supply an integer')
 
-
     def validate_name(self,value):
         return cleanstring(value).lower()
 

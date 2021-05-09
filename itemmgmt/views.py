@@ -4,7 +4,7 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 from rest_framework.decorators import api_view
-
+from django.db.models import Q
 from itemmgmt.serializers import *
 from overall.views import *
 
@@ -27,9 +27,13 @@ class itemCatMgmt:
 
             # to update filters - start
             category = request.GET.get('category', None)
-            sub_category = request.GET.get('sub_category', None)
+            search = request.GET.get('search', None)
             if category is not None:
-                objects = objects.filter(category__icontains=category)
+                category_list = category.split(",")
+                objects = objects.filter(category__in=category_list)
+
+            if search is not None:
+                objects = objects.filter(Q(category__icontains=search) | Q(sub_category__icontains=search))
 
             # to update filters - end
 
@@ -207,9 +211,18 @@ class itemMgmt:
             objects = dataObject.objects.all()
 
             # to update filters - start
-            name = request.GET.get('name', None)
-            if name is not None:
-                objects = objects.filter(name__icontains=name)
+
+
+
+            search = request.GET.get('search', None)
+            category = request.GET.get('category', None)
+
+            if category is not None:
+                category_list = category.split(",")
+                objects = objects.filter(category__in=category_list)
+
+            if search is not None:
+                objects = objects.filter(Q(name__icontains=search) | Q(description__icontains=search))
 
             # to update filters - end
 
@@ -303,8 +316,8 @@ class itemMgmt:
     def object_detail_v1(request, id):
         
         # to update - start
-        dataObject = ItemCategory
-        dataObjectFriendlyName = "Item Category"
+        dataObject = Item
+        dataObjectFriendlyName = "Item"
         dataObjectSerializerIn = ItemSerializerIn    
         dataObjectSerializerOut = ItemSerializerOut    
         # to update - end

@@ -1,8 +1,6 @@
 /.DS_Store
 /db.sqlite3
 
-.DS_Store
-
 # Django #
 *.log
 *.pot

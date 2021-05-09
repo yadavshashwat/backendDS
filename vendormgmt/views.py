@@ -24,9 +24,10 @@ class vendorMgmt:
             objects = dataObject.objects.all()
 
             # to update filters - start
-            company_name = request.GET.get('company_name', None)
-            if company_name is not None:
-                objects = objects.filter(company_name__icontains=company_name)
+            search = request.GET.get('search', None)
+
+            if search is not None:
+                objects = objects.filter(company_name__icontains=search)
 
             # to update filters - end
 
