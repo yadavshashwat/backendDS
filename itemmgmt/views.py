@@ -212,8 +212,6 @@ class itemMgmt:
 
             # to update filters - start
 
-
-
             search = request.GET.get('search', None)
             category = request.GET.get('category', None)
 
