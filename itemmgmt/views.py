@@ -8,7 +8,6 @@ from django.db.models import Q
 from itemmgmt.serializers import *
 from overall.views import *
 
-
 class itemCatMgmt:
     @api_view(['GET', 'POST', 'DELETE'])
     def object_list_v1(request):
@@ -94,15 +93,27 @@ class itemCatMgmt:
                     return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
             
             elif count == -1:
-                success = False
-                message = dataObjectFriendlyName + " Search Error!"
-                errors = []
-                obj = {
-                    'success':success,
-                    'message': message,
-                    'errors': errors
-                }
-                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+                if object_serializer.is_valid():
+                    success = False
+                    message = dataObjectFriendlyName + " Search Error!"
+                    errors = []
+                    obj = {
+                        'success':success,
+                        'message': message,
+                        'errors': errors
+                    }
+                    return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    success = False
+                    message = "Invalid Serializer!"
+                    errors = object_serializer.errors
+                    obj = {
+                        'success':success,
+                        'message': message,
+                        'errors': errors
+                    }
+                    return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+
 
             else:
                 success = False
@@ -193,7 +204,6 @@ class itemCatMgmt:
 
             return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
         
-
 class itemMgmt:
     @api_view(['GET', 'POST', 'DELETE'])
     def object_list_v1(request):
@@ -202,8 +212,7 @@ class itemMgmt:
         dataObject = Item
         dataObjectFriendlyName = "Item"
         dataObjectFilterList = {}
-        dataObjectSerializerIn = ItemSerializerIn  
-        dataObjectSerializerOut = ItemSerializerOut  
+        dataObjectSerializer = ItemSerializer  
         natural_key = 'name'
         # to update - end
 
@@ -226,7 +235,7 @@ class itemMgmt:
 
             # Setting up pagination
             pagination_out = pagination(object=objects,request=request)
-            object_serializer = dataObjectSerializerOut(pagination_out['object'], many=True)
+            object_serializer = dataObjectSerializer(pagination_out['object'], many=True)
             
             num_pages = pagination_out['num_pages']
             total_records = pagination_out['total_records']
@@ -254,7 +263,7 @@ class itemMgmt:
             except:
                 count = -1
 
-            object_serializer = dataObjectSerializerIn(data=object_data)
+            object_serializer = dataObjectSerializer(data=object_data)
             
             if count == 0:
                 if object_serializer.is_valid():
@@ -280,15 +289,26 @@ class itemMgmt:
                     }
                     return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
             elif count == -1:
-                success = False
-                message = dataObjectFriendlyName + " Search Error!"
-                errors = []
-                obj = {
-                    'success':success,
-                    'message': message,
-                    'errors': errors
-                }
-                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+                if object_serializer.is_valid():
+                    success = False
+                    message = dataObjectFriendlyName + " Search Error!"
+                    errors = []
+                    obj = {
+                        'success':success,
+                        'message': message,
+                        'errors': errors
+                    }
+                    return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    success = False
+                    message = "Invalid Serializer!"
+                    errors = object_serializer.errors
+                    obj = {
+                        'success':success,
+                        'message': message,
+                        'errors': errors
+                    }
+                    return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
             else:
                 success = False
                 message = dataObjectFriendlyName + " Already Exists!"
@@ -316,8 +336,8 @@ class itemMgmt:
         # to update - start
         dataObject = Item
         dataObjectFriendlyName = "Item"
-        dataObjectSerializerIn = ItemSerializerIn    
-        dataObjectSerializerOut = ItemSerializerOut    
+        dataObjectSerializer = ItemSerializer    
+        # dataObjectSerializerOut = ItemSerializerOut    
         # to update - end
 
         try: 
@@ -332,7 +352,7 @@ class itemMgmt:
             return JsonResponse(obj, status=status.HTTP_404_NOT_FOUND) 
     
         if request.method == 'GET': 
-            object_serializer = dataObjectSerializerOut(object) 
+            object_serializer = dataObjectSerializer(object) 
             message = dataObjectFriendlyName + " Found!"
             success = True
             data = object_serializer.data
@@ -345,7 +365,7 @@ class itemMgmt:
     
         elif request.method == 'PUT': 
             object_data = JSONParser().parse(request) 
-            object_serializer = dataObjectSerializerIn(object, data=object_data) 
+            object_serializer = dataObjectSerializer(object, data=object_data) 
             if object_serializer.is_valid(): 
                 object_serializer.save() 
                 success = True
@@ -378,3 +398,4 @@ class itemMgmt:
                 }
 
             return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
+

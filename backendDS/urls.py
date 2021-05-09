@@ -31,8 +31,8 @@ urlpatterns = [
     url(r'^api/v1/itemcats$', itemCatMgmt.object_list_v1),
     url(r'^api/v1/itemcats/(?P<id>[0-9]+)$', itemCatMgmt.object_detail_v1),
 
-    url(r'^api/v1/item$', itemMgmt.object_list_v1),
-    url(r'^api/v1/item/(?P<id>[0-9]+)$', itemMgmt.object_detail_v1),
+    url(r'^api/v1/items$', itemMgmt.object_list_v1),
+    url(r'^api/v1/items/(?P<id>[0-9]+)$', itemMgmt.object_detail_v1),
 
 
 ]

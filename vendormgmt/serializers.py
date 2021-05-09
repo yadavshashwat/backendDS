@@ -7,6 +7,13 @@ class VendorSerializer(serializers.ModelSerializer):
     contact_phone = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     contact_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     pincode = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    city = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    state = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    source = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    address = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    owner_name = serializers.CharField(required=False, allow_null=True,allow_blank=True)
+    owner_phone = serializers.CharField(required=False, allow_null=True,allow_blank=True)
+    company_name = serializers.CharField(required=True, allow_null=False,allow_blank=False)
     
     def validate_contact_phone(self, value):
         if not value:

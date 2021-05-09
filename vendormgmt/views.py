@@ -88,17 +88,26 @@ class vendorMgmt:
                     return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
 
             elif count == -1:
-                success = False
-                message = dataObjectFriendlyName + " Search Error!"
-                errors = []
-                obj = {
-                    'success':success,
-                    'message': message,
-                    'errors': errors
-                }
-                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
-
-
+                if object_serializer.is_valid():
+                    success = False
+                    message = dataObjectFriendlyName + " Search Error!"
+                    errors = []
+                    obj = {
+                        'success':success,
+                        'message': message,
+                        'errors': errors
+                    }
+                    return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    success = False
+                    message = "Invalid Serializer!"
+                    errors = object_serializer.errors
+                    obj = {
+                        'success':success,
+                        'message': message,
+                        'errors': errors
+                    }
+                    return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
             else:
                 success = False
                 message = dataObjectFriendlyName + " Already Exists!"

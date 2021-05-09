@@ -6,8 +6,8 @@ from overall.models import BaseModel
 
 class Vendor(BaseModel):
     company_name = models.CharField(max_length=100,null=False)
-    owner_name = models.CharField(max_length=100,null=False)
-    owner_phone = models.IntegerField(null=False)
+    owner_name = models.CharField(max_length=100,null=True)
+    owner_phone = models.IntegerField(null=True)
     contact_name = models.CharField(max_length=100,null=True,blank=True)
     contact_phone = models.IntegerField(null=True,blank=True)
     email = models.EmailField(null=True)

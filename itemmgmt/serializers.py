@@ -5,6 +5,8 @@ from django.forms.models import model_to_dict
 
 class ItemCategorySerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    category = serializers.CharField(required=True, allow_null=False, allow_blank=False)
+    sub_category = serializers.CharField(required=True, allow_null=False, allow_blank=False)
     
     def validate_category(self,value):
         return cleanstring(value).lower()
@@ -19,10 +21,12 @@ class ItemCategorySerializer(serializers.ModelSerializer):
         model = ItemCategory
         fields = '__all__'
 
-class ItemSerializerIn(serializers.ModelSerializer):
+class ItemSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     dimensions = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     sell_price = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    category = serializers.CharField(required=False, allow_null=True, allow_blank=True,write_only=True)
+    category_details = ItemCategorySerializer(source="category",read_only=True)
     
     def validate_sell_price(self, value):
         if not value:
@@ -31,6 +35,15 @@ class ItemSerializerIn(serializers.ModelSerializer):
             return int(value)
         except ValueError:
             raise serializers.ValidationError('You must supply an integer')
+    
+    def validate_category(self,value):
+        if not value:
+            return None
+        try:
+            catObject = ItemCategory.objects.get(id=value)
+            return catObject
+        except ValueError:
+            raise serializers.ValidationError('You must supply an valid category id')
 
     def validate_name(self,value):
         return cleanstring(value).lower()
@@ -43,12 +56,4 @@ class ItemSerializerIn(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        exclude = ('category',)
-
-class ItemSerializerOut(serializers.ModelSerializer):
-    category_name = ItemCategorySerializer(source="category",read_only=True)
-    class Meta:
-        model = Item
-        fields = ('name','description','dimensions','sell_price','category_name')
-
-
+        fields = ('id','name','description','dimensions','sell_price','category','category_details')
