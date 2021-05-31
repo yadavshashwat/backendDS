@@ -3,3 +3,4 @@ ipython
 psycopg2-binary==2.8.3
 django-cors-headers
 djangorestframework
+boto3

@@ -7,6 +7,11 @@ from rest_framework.decorators import api_view
 from django.db.models import Q
 from itemmgmt.serializers import *
 from overall.views import *
+import boto3
+import time
+import os
+from backendDS.settings import AWS_ACCESS_KEY, AWS_SECRET_KEY
+
 
 class itemCatMgmt:
     @api_view(['GET', 'POST', 'DELETE'])
@@ -398,4 +403,68 @@ class itemMgmt:
                 }
 
             return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
+
+    # def upload_image(request):
+    @api_view(['PUT'])
+    def upload_item_image(request,id):
+        dataObject = Item
+        dataObjectFriendlyName = "Item"
+        bucket_name = "thedecorshop"
+        file = request.FILES["file"]
+        destination = open('filename.data', 'wb')
+        # obj = {}
+
+        try: 
+            object = dataObject.objects.get(id=id) 
+
+        except dataObject.DoesNotExist: 
+            message = 'The ' + dataObjectFriendlyName + ' does not exist'
+            success = False
+            obj = {
+                    'message': message,
+                    'success': success
+                }
+            return JsonResponse(obj, status=status.HTTP_404_NOT_FOUND) 
+
+
+        for chunk in file.chunks():
+            destination.write(chunk)
+        destination.close()
+        session = boto3.Session(
+            aws_access_key_id = AWS_ACCESS_KEY,
+            aws_secret_access_key = AWS_SECRET_KEY,
+        )
+        s3 = session.resource('s3')
+        ts = time.time()
+        final_filename = "img-" + random_str_generator(4) + str(ts).replace(".", "")  + ".jpg" 
+        s3.Object(bucket_name, 'images/' + final_filename).put(Body=open('filename.data', 'rb'))
+
+
+        filepath = "https://"+bucket_name +".s3.ap-south-1.amazonaws.com/images/" + final_filename
+
+
+        fileupload = ItemImage.objects.create(
+                                            file_name  = final_filename,
+                                            path        = filepath,
+                                            file_type        = "image",
+                                            item= object
+                                            )
+    
+
+        if os.path.exists('filename.data'):
+            os.remove('filename.data')
+
+        success = True
+        message = "Found "+ dataObjectFriendlyName +" Records"
+        obj = {
+                'success':success,
+                'id':fileupload.id,
+                'message':message,
+                'data':{ 'file_name':fileupload.file_name,
+                        'file_path':fileupload.path,
+                        'file_type':fileupload.file_type
+                        }   
+                }
+
+        return JsonResponse(obj, safe=False)
 

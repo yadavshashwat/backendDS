@@ -2,6 +2,7 @@ from rest_framework import serializers
 from itemmgmt.models import *
 from overall.views import *
 from django.forms.models import model_to_dict
+from rest_framework.serializers import Serializer, FileField
 
 class ItemCategorySerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False, allow_null=True, allow_blank=True)
@@ -57,3 +58,12 @@ class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = ('id','name','description','dimensions','sell_price','category','category_details')
+
+
+
+
+# Serializers define the API representation.
+class UploadSerializer(Serializer):
+    file_uploaded = FileField()
+    class Meta:
+        fields = ['file_uploaded']

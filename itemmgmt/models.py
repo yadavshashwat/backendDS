@@ -14,23 +14,25 @@ class ItemCategory(BaseModel):
 
 class Item(BaseModel):
     name        = models.CharField(max_length=200,null=False)
-    description = models.CharField(max_length=500,null=True)
-    dimensions  = models.CharField(max_length=200,null=True)
+    description = models.CharField(max_length=500,null=True,blank=True)
+    dimensions  = models.CharField(max_length=200,null=True,blank=True)
     sell_price  = models.IntegerField(null=True,blank=True)
     category    = models.ForeignKey(ItemCategory,
                                 on_delete=models.SET_NULL,
-                                null=True)
+                                null=True,blank=True)
     def __str__(self):
         return json.dumps({'id':self.id,'name':self.name})
 
 class ItemImage(BaseModel):
-    path        = models.CharField(max_length=200,null=False)
-    image_type  = models.CharField(max_length=50,null=False)
-    item        = models.ForeignKey(Item,
+    path                    = models.CharField(max_length=200,null=False)
+    file_name               = models.CharField(max_length=200)
+    file_type               = models.CharField(max_length=200)
+    item                    = models.ForeignKey(Item,
                                 on_delete=models.CASCADE,
                                 null=False)
+
     def __str__(self):
-        return json.dumps({'id':self.id,'name':self.item__name,'path':self.path})
+        return json.dumps({'id':self.id,'item':self.item.name,'path':self.path})
 
 
 

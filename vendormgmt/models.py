@@ -6,11 +6,11 @@ from overall.models import BaseModel
 
 class Vendor(BaseModel):
     company_name = models.CharField(max_length=100,null=False)
-    owner_name = models.CharField(max_length=100,null=True)
-    owner_phone = models.IntegerField(null=True)
+    owner_name = models.CharField(max_length=100,null=True,blank=True)
+    owner_phone = models.IntegerField(null=True,blank=True)
     contact_name = models.CharField(max_length=100,null=True,blank=True)
     contact_phone = models.IntegerField(null=True,blank=True)
-    email = models.EmailField(null=True)
+    email = models.EmailField(null=True,blank=True)
     address = models.CharField(max_length=300,null=True,blank=True)
     city = models.CharField(max_length=150,null=True,blank=True)
     state = models.CharField(max_length=150,null=True,blank=True)
