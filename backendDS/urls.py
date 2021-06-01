@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf.urls import url 
 
-# from usermgmt.views import *
+from usermgmt.views import *
 from vendormgmt.views import *
 from itemmgmt.views import *
 
@@ -25,6 +25,18 @@ from itemmgmt.views import *
 urlpatterns = [
     path('admin/', admin.site.urls),
     # version 1 apis
+
+    url(r'^api/v1/users$', userMgmt.object_list_v1),
+    url(r'^api/v1/users/(?P<id>[0-9]+)$', userMgmt.object_detail_v1),
+
+    url(r'^api/v1/user/login$', userMgmt.login_view),
+    url(r'^api/v1/user/logout$', userMgmt.logout_view),
+    url(r'^api/v1/user/reset_request$', userMgmt.send_password_reset),
+    url(r'^api/v1/user/reset$', userMgmt.reset_pass),
+
+
+
+
     url(r'^api/v1/vendors$', vendorMgmt.object_list_v1),
     url(r'^api/v1/vendors/(?P<id>[0-9]+)$', vendorMgmt.object_detail_v1),
 

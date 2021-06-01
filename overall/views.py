@@ -35,7 +35,7 @@ def set_cookie(response, key, value, days_expire = 7):
 
 # Random String Generator
 
-def random_str_generator(size=6, chars=string.ascii_uppercase + string.digits):
+def random_str_generator(size=10, chars=string.ascii_uppercase + string.digits):
     return ''.join(random.choice(chars) for x in range(size))
 
 # Pagination Setup
