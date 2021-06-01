@@ -94,7 +94,7 @@ class userMgmt:
         #         'success':True,
         #         'message': message
         #         }
-        #     return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
+        #     return JsonResponse(obj)
 
     @api_view(['GET', 'PUT', 'DELETE'])
     def object_detail_v1(request, id):
@@ -162,6 +162,6 @@ class userMgmt:
                 'message': message
                 }
 
-            return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
+            return JsonResponse(obj)
         
             

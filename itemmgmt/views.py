@@ -10,6 +10,7 @@ from overall.views import *
 import boto3
 import time
 import os
+import operator
 from backendDS.settings import AWS_ACCESS_KEY, AWS_SECRET_KEY
 
 
@@ -20,6 +21,7 @@ class itemCatMgmt:
         # to update - start
         dataObject = ItemCategory
         dataObjectFriendlyName = "Item Category"
+
         dataObjectFilterList = {}
         dataObjectSerializer = ItemCategorySerializer  
         natural_key_1 = 'category'
@@ -27,17 +29,46 @@ class itemCatMgmt:
         # to update - end
 
         if request.method == 'GET':
+            dataObjectFilterList['sort_by'] = [
+                            {'value':'category','label':'Category'},
+                            {'value':'sub_category','label':'Sub Category'},
+                        ]
+            dataObjectFilterList['order_by'] = [{'value':'asc','label':'Ascending'},
+                            {'value':'desc','label':'Descending'}]
+
+            category_list = ItemCategory.objects.all()
+            dataObjectFilterList['category'] = []
+            for item in category_list:
+                dataObjectFilterList['category'].append({
+                    'value':item.category,
+                    'label':(item.category).title()
+                    })
+            dataObjectFilterList['category'] = {v['value']:v for v in dataObjectFilterList['category']}.values()
+            dataObjectFilterList['category'] = sorted(dataObjectFilterList['category'], key=operator.itemgetter('value'))
+            
+
             objects = dataObject.objects.all()
 
             # to update filters - start
             category = request.GET.get('category', None)
             search = request.GET.get('search', None)
-            if category is not None:
+            sort_by = request.GET.get('sort_by', None)
+            order = request.GET.get('order', None)
+
+            if category !=None and category !="" and category != "none":
                 category_list = category.split(",")
                 objects = objects.filter(category__in=category_list)
 
-            if search is not None:
+            if search !=None and search !="" and search != "none":
                 objects = objects.filter(Q(category__icontains=search) | Q(sub_category__icontains=search))
+
+            if sort_by !=None and sort_by !="" and sort_by != "none":
+                if order == "asc":
+                    objects = objects.order_by(sort_by)
+                else:
+                    objects = objects.order_by("-" + sort_by)
+
+
 
             # to update filters - end
 
@@ -139,7 +170,7 @@ class itemCatMgmt:
                 'success':True,
                 'message': message
                 }
-            return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
+            return JsonResponse(obj)
 
     @api_view(['GET', 'PUT', 'DELETE'])
     def object_detail_v1(request, id):
@@ -207,7 +238,7 @@ class itemCatMgmt:
                 'message': message
                 }
 
-            return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
+            return JsonResponse(obj)
         
 class itemMgmt:
     @api_view(['GET', 'POST', 'DELETE'])
@@ -333,7 +364,7 @@ class itemMgmt:
                 'success':True,
                 'message': message
                 }
-            return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
+            return JsonResponse(obj)
 
     @api_view(['GET', 'PUT', 'DELETE'])
     def object_detail_v1(request, id):
@@ -402,7 +433,7 @@ class itemMgmt:
                 'message': message
                 }
 
-            return JsonResponse(obj, status=status.HTTP_204_NO_CONTENT)
+            return JsonResponse(obj)
 
     # def upload_image(request):
     @api_view(['PUT'])
