@@ -273,7 +273,7 @@ class userMgmt:
                 obj['auth'] = True
                 message = "Login Success!"
                 success = True
-                print(1)
+                # print(1)
             except:
                 obj['auth'] = False
                 message = "Auth Token Expired"
@@ -283,7 +283,7 @@ class userMgmt:
         elif password:
             try:
                 user = DecorShopUser.objects.get(email=email,is_active=True)
-                print(2)
+                # print(2)
                 if user:
                     user.backend = 'django.contrib.auth.backends.ModelBackend'
                     message = "User Found"
@@ -303,7 +303,7 @@ class userMgmt:
                         obj['data']['email'] = user.email
                         obj['data']['is_staff'] = user.is_staff
                         obj['auth'] = True
-                        print(3)
+                        # print(3)
                         message = "Login Success!"
                         success = True
                         user.save()
@@ -326,7 +326,7 @@ class userMgmt:
         elif secret_string:
             try:
                 user = DecorShopUser.objects.get(email=email,is_active=True)
-                print(2)
+                # print(2)
                 if user:
                     user.backend = 'django.contrib.auth.backends.ModelBackend'
                     message = "User Found"

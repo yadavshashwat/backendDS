@@ -27,6 +27,7 @@ class ItemImage(BaseModel):
     path                    = models.CharField(max_length=200,null=False)
     file_name               = models.CharField(max_length=200)
     file_type               = models.CharField(max_length=200)
+    is_primary              = models.BooleanField(default=False)
     item                    = models.ForeignKey(Item,
                                 on_delete=models.CASCADE,
                                 null=False)

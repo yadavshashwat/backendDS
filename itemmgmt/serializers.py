@@ -22,13 +22,18 @@ class ItemCategorySerializer(serializers.ModelSerializer):
         model = ItemCategory
         fields = '__all__'
 
+class ItemImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemImage
+        fields = ('id','path','file_name','file_type','is_primary')
 class ItemSerializer(serializers.ModelSerializer):
     description = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     dimensions = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     sell_price = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     category = serializers.CharField(required=False, allow_null=True, allow_blank=True,write_only=True)
     category_details = ItemCategorySerializer(source="category",read_only=True)
-    
+    image_details = ItemImageSerializer(source='itemimage_set', many=True,read_only=True)   
+
     def validate_sell_price(self, value):
         if not value:
             return None
@@ -57,13 +62,6 @@ class ItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ('id','name','description','dimensions','sell_price','category','category_details')
+        fields = ('id','name','description','dimensions','sell_price','category','category_details','image_details')
 
 
-
-
-# Serializers define the API representation.
-class UploadSerializer(Serializer):
-    file_uploaded = FileField()
-    class Meta:
-        fields = ['file_uploaded']

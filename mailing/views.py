@@ -20,16 +20,16 @@ import boto3
 from botocore.exceptions import ClientError
 
 # AWS SES
-aws_smtp_username= "AKIAZYWQSOEIMR7WSCIE"
-aws_smtp_password= "BFXzmGXQ5Px82+L0zLQRiWHKB48O0WvcfnkTWCuDMy8W"
-aws_smtp_server = "email-smtp.ap-south-1.amazonaws.com"
+aws_smtp_username= ""
+aws_smtp_password= ""
+aws_smtp_server = ""
 aws_smpt_port = 25
 
 
 
 
-AWS_ACCESS_ID = "AKIAZYWQSOEIOPTT6P7U"
-AWS_KEY= "FrwkweN3TwDrJNzfVPfQT0shiKKptJXXdpIEXsrm"
+AWS_ACCESS_ID = ""
+AWS_KEY= ""
 
 
 

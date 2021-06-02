@@ -158,6 +158,7 @@ Thumbs.db
 # profiling data
 .prof
 
+backendDS/credentials.py
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

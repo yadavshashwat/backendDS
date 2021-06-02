@@ -11,7 +11,7 @@ import boto3
 import time
 import os
 import operator
-from backendDS.settings import AWS_ACCESS_KEY, AWS_SECRET_KEY
+from backendDS.credentials import AWS_S3_ACCESS_KEY, AWS_S3_SECRET_KEY
 
 
 class itemCatMgmt:
@@ -258,19 +258,43 @@ class itemMgmt:
         # to update - end
 
         if request.method == 'GET':
+
+            dataObjectFilterList['sort_by'] = [
+                            {'value':'name','label':'Name'},
+                            {'value':'category__category','label':'Category'},
+                        ]
+            dataObjectFilterList['order_by'] = [{'value':'asc','label':'Ascending'},
+                            {'value':'desc','label':'Descending'}]
+
+            category_list = ItemCategory.objects.all()
+            dataObjectFilterList['category'] = []
+            for item in category_list:
+                dataObjectFilterList['category'].append({
+                    'value':item.id,
+                    'label':(item.category + " | " + item.sub_category).title()
+                    })
+    
             objects = dataObject.objects.all()
 
             # to update filters - start
 
-            search = request.GET.get('search', None)
             category = request.GET.get('category', None)
+            search = request.GET.get('search', None)
+            sort_by = request.GET.get('sort_by', None)
+            order = request.GET.get('order', None)
 
-            if category is not None:
+            if category !=None and category !="" and category != "none":
                 category_list = category.split(",")
                 objects = objects.filter(category__in=category_list)
 
-            if search is not None:
+            if search !=None and search !="" and search != "none":
                 objects = objects.filter(Q(name__icontains=search) | Q(description__icontains=search))
+
+            if sort_by !=None and sort_by !="" and sort_by != "none":
+                if order == "asc":
+                    objects = objects.order_by(sort_by)
+                else:
+                    objects = objects.order_by("-" + sort_by)
 
             # to update filters - end
 
@@ -441,15 +465,17 @@ class itemMgmt:
             return JsonResponse(obj)
 
     # def upload_image(request):
-    @api_view(['PUT'])
+    @api_view(['POST'])
     def upload_item_image(request,id):
         dataObject = Item
         dataObjectFriendlyName = "Item"
         bucket_name = "thedecorshop"
-        file = request.FILES["file"]
-        destination = open('filename.data', 'wb')
-        # obj = {}
-
+        files = request.FILES.getlist("file")
+        # destination = open('filename.data', 'wb')
+        print(files)
+        print(len(files))
+        obj = {}
+        data = []
         try: 
             object = dataObject.objects.get(id=id) 
 
@@ -461,46 +487,66 @@ class itemMgmt:
                     'success': success
                 }
             return JsonResponse(obj, status=status.HTTP_404_NOT_FOUND) 
+        # print(len(file))
+        totalOldImages = ItemImage.objects.filter(item = object).count()
+        count = 0
+        for file in files:
+            destination = open('filename.data', 'wb')
+            for chunk in file.chunks():
+                destination.write(chunk)
+            destination.close()
+            session = boto3.Session(
+                aws_access_key_id = AWS_S3_ACCESS_KEY,
+                aws_secret_access_key = AWS_S3_SECRET_KEY,
+            )
+            s3 = session.resource('s3')
+            ts = time.time()
+            final_filename = "img-" + random_str_generator(4) + str(ts).replace(".", "")  + ".jpg" 
+            s3.Object(bucket_name, 'images/' + final_filename).put(Body=open('filename.data', 'rb'))
 
 
-        for chunk in file.chunks():
-            destination.write(chunk)
-        destination.close()
-        session = boto3.Session(
-            aws_access_key_id = AWS_ACCESS_KEY,
-            aws_secret_access_key = AWS_SECRET_KEY,
-        )
-        s3 = session.resource('s3')
-        ts = time.time()
-        final_filename = "img-" + random_str_generator(4) + str(ts).replace(".", "")  + ".jpg" 
-        s3.Object(bucket_name, 'images/' + final_filename).put(Body=open('filename.data', 'rb'))
+            filepath = "https://"+bucket_name +".s3.ap-south-1.amazonaws.com/images/" + final_filename
+            if totalOldImages == 0 and count == 0:
+                is_primary = True
+            else:
+                is_primary = False
 
+            fileupload = ItemImage.objects.create(
+                                                file_name  = final_filename,
+                                                path       = filepath,
+                                                file_type  = "image",
+                                                item       = object,
+                                                is_primary = is_primary
+                                                )
+        
 
-        filepath = "https://"+bucket_name +".s3.ap-south-1.amazonaws.com/images/" + final_filename
+            if os.path.exists('filename.data'):
+                os.remove('filename.data')
+            count = count + 1
+            data.append({ 'id':fileupload.id,
+                            'file_name':fileupload.file_name,
+                           'file_path':fileupload.path,
+                           'file_type':fileupload.file_type
+                        })
 
-
-        fileupload = ItemImage.objects.create(
-                                            file_name  = final_filename,
-                                            path        = filepath,
-                                            file_type        = "image",
-                                            item= object
-                                            )
-    
-
-        if os.path.exists('filename.data'):
-            os.remove('filename.data')
-
-        success = True
-        message = "Found "+ dataObjectFriendlyName +" Records"
-        obj = {
-                'success':success,
-                'id':fileupload.id,
-                'message':message,
-                'data':{ 'file_name':fileupload.file_name,
-                        'file_path':fileupload.path,
-                        'file_type':fileupload.file_type
-                        }   
-                }
+        if count == len(files):
+            success = True
+            message = "Uploaded "+ str(count) +" of " + str(len(files)) +" images"
+            obj = {
+                    'success':success,
+                    'object_id':object.id,
+                    'message':message,
+                    'data':data   
+                    }
+        else:
+            success = False
+            message = "Uploaded "+ str(count) +" of " + str(len(files)) +" images"
+            obj = {
+                    'success':success,
+                    'object_id':object.id,
+                    'message':message,
+                    'data':data   
+                    }
 
         return JsonResponse(obj, safe=False)
 
