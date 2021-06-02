@@ -141,5 +141,3 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'usermgmt.decorshopuser'
 
-AWS_ACCESS_KEY = "AKIAZYWQSOEIELJTBJRK"
-AWS_SECRET_KEY = "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"
