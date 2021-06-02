@@ -54,6 +54,7 @@ class itemCatMgmt:
             search = request.GET.get('search', None)
             sort_by = request.GET.get('sort_by', None)
             order = request.GET.get('order', None)
+            is_all = request.GET.get('is_all', None)
 
             if category !=None and category !="" and category != "none":
                 category_list = category.split(",")
@@ -73,7 +74,11 @@ class itemCatMgmt:
             # to update filters - end
 
             # Setting up pagination
-            pagination_out = pagination(object=objects,request=request)
+            if is_all != 0 and is_all !=None and is_all != "":
+                pagination_out = pagination(object=objects,request=request)
+            else:
+                pagination_out = {'object':objects,'num_pages':1,'total_records':objects.count()}
+
             object_serializer = dataObjectSerializer(pagination_out['object'], many=True)
             
             num_pages = pagination_out['num_pages']
