@@ -4,9 +4,11 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser 
 from rest_framework import status
 from rest_framework.decorators import api_view
-
+from django.db.models import Q
 from vendormgmt.serializers import *
 from overall.views import *
+import operator
+from overall.models import cities_india, states_ut_india
 
 class vendorMgmt:
     @api_view(['GET', 'POST', 'DELETE'])
@@ -22,12 +24,65 @@ class vendorMgmt:
 
         if request.method == 'GET':
             objects = dataObject.objects.all()
+            dataObjectFilterList['sort_by'] = [
+                            {'value':'company_name','label':'Company Name'},
+                            {'value':'owner_name','label':'Owner Name'},
+                            {'value':'contact_name','label':'Other Contact Name'},
+                            {'value':'city','label':'City'},
+                            {'value':'state','label':'State'}
+                        ]
+            dataObjectFilterList['order_by'] = [{'value':'asc','label':'Ascending'},
+                            {'value':'desc','label':'Descending'}]
+
+            dataObjectFilterList['source'] = []
+
+            for source in objects:
+                dataObjectFilterList['source'].append({
+                    'value':source.source,
+                    'label':(source.source).title()
+                    })
+            dataObjectFilterList['source'] = {v['value']:v for v in dataObjectFilterList['source']}.values()
+            dataObjectFilterList['source'] = sorted(dataObjectFilterList['source'], key=operator.itemgetter('value'))
+
+            dataObjectFilterList['cities'] = []
+            for city in cities_india:
+                dataObjectFilterList['cities'].append({
+                    'value':city,
+                    'label':(city).title()
+                    })
+
+            dataObjectFilterList['states'] = []
+            for state in states_ut_india:
+                dataObjectFilterList['states'].append({
+                    'value':state,
+                    'label':(state).title()
+                    })
+
 
             # to update filters - start
-            search = request.GET.get('search', None)
 
-            if search is not None:
-                objects = objects.filter(company_name__icontains=search)
+            state = request.GET.get('state', None)
+            city = request.GET.get('city', None)
+            search = request.GET.get('search', None)
+            sort_by = request.GET.get('sort_by', None)
+            order = request.GET.get('order', None)
+
+            if state !=None and state !="" and state != "none":
+                state_list = state.split(",")
+                objects = objects.filter(state__in=state_list)
+
+            if city !=None and city !="" and city != "none":
+                city_list = city.split(",")
+                objects = objects.filter(city__in=city_list)
+
+            if search !=None and search !="" and search != "none":
+                objects = objects.filter(Q(company_name__icontains=search) | Q(owner_name__icontains=search))
+
+            if sort_by !=None and sort_by !="" and sort_by != "none":
+                if order == "asc":
+                    objects = objects.order_by(sort_by)
+                else:
+                    objects = objects.order_by("-" + sort_by)
 
             # to update filters - end
 
