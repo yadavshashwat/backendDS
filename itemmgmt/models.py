@@ -1,4 +1,5 @@
 from math import trunc
+from vendormgmt.models import Vendor
 from django.db import models
 import json
 from overall.models import BaseModel
@@ -31,13 +32,19 @@ class ItemImage(BaseModel):
     item                    = models.ForeignKey(Item,
                                 on_delete=models.CASCADE,
                                 null=False)
-
     def __str__(self):
         return json.dumps({'id':self.id,'item':self.item.name,'path':self.path})
 
 
 
-
+class VendorItem(BaseModel):
+    vendor = models.ForeignKey(Vendor,
+                        on_delete=models.CASCADE,
+                        null=False)
+    item = models.ForeignKey(Item,
+                        on_delete=models.CASCADE,
+                        null=False)
+    cost_price  = models.IntegerField(null=True,blank=True)
 
 
 

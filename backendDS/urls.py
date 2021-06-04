@@ -34,9 +34,6 @@ urlpatterns = [
     url(r'^api/v1/user/reset_request$', userMgmt.send_password_reset),
     url(r'^api/v1/user/reset$', userMgmt.reset_pass),
 
-
-
-
     url(r'^api/v1/vendors$', vendorMgmt.object_list_v1),
     url(r'^api/v1/vendors/(?P<id>[0-9]+)$', vendorMgmt.object_detail_v1),
 
@@ -47,7 +44,10 @@ urlpatterns = [
     url(r'^api/v1/items/(?P<id>[0-9]+)$', itemMgmt.object_detail_v1),
     url(r'^api/v1/itemimageupload/(?P<id>[0-9]+)$', itemMgmt.upload_item_image),
 
-
+    url(r'^api/v1/vendoritemspair$', vendorItemMgmt.object_create_v1),
+    url(r'^api/v1/vendoritemspair/(?P<id>[0-9]+)$', vendorItemMgmt.object_detail_v1),
+    url(r'^api/v1/vendoritems/(?P<id>[0-9]+)$', vendorItemMgmt.object_list_vendor_item_v1),
+    url(r'^api/v1/itemvendors/(?P<id>[0-9]+)$', vendorItemMgmt.object_list_item_vendor_v1),
 ]
 
 

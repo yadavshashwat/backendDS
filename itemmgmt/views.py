@@ -12,7 +12,7 @@ import time
 import os
 import operator
 from backendDS.credentials import AWS_S3_ACCESS_KEY, AWS_S3_SECRET_KEY
-
+from overall.models import states_ut_india, cities_india
 
 class itemCatMgmt:
     @api_view(['GET', 'POST', 'DELETE'])
@@ -550,3 +550,407 @@ class itemMgmt:
 
         return JsonResponse(obj, safe=False)
 
+
+class vendorItemMgmt:
+    @api_view(['POST'])
+    def object_create_v1(request):
+        # to update - start
+        dataObject = VendorItem
+        dataObjectFriendlyName = "Vendor Item"
+
+        dataObjectFilterList = {}
+        dataObjectSerializer = VendorItemSerializer  
+        natural_key_1 = 'vendor'
+        natural_key_2 = 'item'
+        # to update - end
+
+        # if request.method == 'GET':
+        #     dataObjectFilterList['sort_by'] = [
+        #                     {'value':'category','label':'Category'},
+        #                     {'value':'sub_category','label':'Sub Category'},
+        #                 ]
+        #     dataObjectFilterList['order_by'] = [{'value':'asc','label':'Ascending'},
+        #                     {'value':'desc','label':'Descending'}]
+
+        #     category_list = ItemCategory.objects.all()
+        #     dataObjectFilterList['category'] = []
+        #     for item in category_list:
+        #         dataObjectFilterList['category'].append({
+        #             'value':item.category,
+        #             'label':(item.category).title()
+        #             })
+        #     dataObjectFilterList['category'] = {v['value']:v for v in dataObjectFilterList['category']}.values()
+        #     dataObjectFilterList['category'] = sorted(dataObjectFilterList['category'], key=operator.itemgetter('value'))
+            
+
+        #     objects = dataObject.objects.all()
+
+        #     # to update filters - start
+        #     category = request.GET.get('category', None)
+        #     search = request.GET.get('search', None)
+        #     sort_by = request.GET.get('sort_by', None)
+        #     order = request.GET.get('order', None)
+        #     is_all = request.GET.get('is_all', None)
+
+        #     if category !=None and category !="" and category != "none":
+        #         category_list = category.split(",")
+        #         objects = objects.filter(category__in=category_list)
+
+        #     if search !=None and search !="" and search != "none":
+        #         objects = objects.filter(Q(category__icontains=search) | Q(sub_category__icontains=search))
+
+        #     if sort_by !=None and sort_by !="" and sort_by != "none":
+        #         if order == "asc":
+        #             objects = objects.order_by(sort_by)
+        #         else:
+        #             objects = objects.order_by("-" + sort_by)
+
+        #     # to update filters - end
+
+        #     # Setting up pagination
+        #     if is_all != 0 and is_all !=None and is_all != "":
+        #         pagination_out = pagination(object=objects,request=request)
+        #     else:
+        #         pagination_out = {'object':objects,'num_pages':1,'total_records':objects.count()}
+
+        #     object_serializer = dataObjectSerializer(pagination_out['object'], many=True)
+            
+        #     num_pages = pagination_out['num_pages']
+        #     total_records = pagination_out['total_records']
+        #     data = object_serializer.data
+        #     filters = dataObjectFilterList
+        #     success = True
+        #     message = "Found "+ dataObjectFriendlyName +" Records"
+        #     obj = {
+        #             'success':success,
+        #             'filters':filters,
+        #             'num_pages':num_pages,
+        #             'total_records':total_records,
+        #             'message':message,
+        #             'data':data
+        #             }
+
+        #     return JsonResponse(obj, safe=False)
+    
+        object_data = JSONParser().parse(request)
+        
+        count = 0 
+        try:
+            count = dataObject.objects.filter(vendor = object_data[natural_key_1], item = object_data[natural_key_2]).count()     
+        except:
+            count = -1
+
+        object_serializer = dataObjectSerializer(data=object_data)
+        
+        if count == 0:
+            if object_serializer.is_valid():
+                object_serializer.save()
+                success = True
+                message = dataObjectFriendlyName + " Added!"
+                data = object_serializer.data
+                obj= {
+                    'success':True,
+                    'message':message,
+                    'data': data
+                }
+                return JsonResponse(obj, status=status.HTTP_201_CREATED) 
+            
+            else:
+                success = False
+                message = "Invalid Serializer!"
+                errors = object_serializer.errors
+                obj = {
+                    'success':success,
+                    'message': message,
+                    'errors': errors
+                }
+                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+        
+        elif count == -1:
+            if object_serializer.is_valid():
+                success = False
+                message = dataObjectFriendlyName + " Search Error!"
+                errors = []
+                obj = {
+                    'success':success,
+                    'message': message,
+                    'errors': errors
+                }
+                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                success = False
+                message = "Invalid Serializer!"
+                errors = object_serializer.errors
+                obj = {
+                    'success':success,
+                    'message': message,
+                    'errors': errors
+                }
+                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+
+
+        else:
+            success = False
+            message = dataObjectFriendlyName + " Already Exists!"
+            errors = []
+            obj = {
+                'success':success,
+                'message': message,
+                'errors': errors
+            }
+            return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+    
+        # elif request.method == 'DELETE':
+        #     count = dataObject.objects.all().delete()
+        #     success = True
+        #     message = ('{} '+ dataObjectFriendlyName  + ' were deleted successfully!').format(count[0])
+        #     obj= {
+        #         'success':True,
+        #         'message': message
+        #         }
+        #     return JsonResponse(obj)
+
+    @api_view(['GET'])
+    def object_list_item_vendor_v1(request,id):
+        dataObject = VendorItem
+        dataObjectFriendlyName = "Item Vendor"
+
+        dataObjectFilterList = {}
+        dataObjectSerializer = VendorItemSerializer  
+        natural_key_1 = 'vendor'
+        natural_key_2 = 'item'
+        # to update - end
+
+        dataObjectFilterList['sort_by'] = [
+                        {'value':'vendor__company_name','label':'Company Name'},
+                        {'value':'vendor__owner_name','label':'Owner Name'},
+                        {'value':'vendor__contact_name','label':'Other Contact Name'},
+                        {'value':'vendor__city','label':'City'},
+                        {'value':'vendor__state','label':'State'}
+                    ]
+        dataObjectFilterList['order_by'] = [{'value':'asc','label':'Ascending'},
+                        {'value':'desc','label':'Descending'}]
+
+        dataObjectFilterList['source'] = []
+        
+        for source in Vendor.objects.all():
+            dataObjectFilterList['source'].append({
+                'value':source.source,
+                'label':(source.source).title()
+                })
+        dataObjectFilterList['source'] = {v['value']:v for v in dataObjectFilterList['source']}.values()
+        dataObjectFilterList['source'] = sorted(dataObjectFilterList['source'], key=operator.itemgetter('value'))
+
+        dataObjectFilterList['cities'] = []
+        for city in cities_india:
+            dataObjectFilterList['cities'].append({
+                'value':city,
+                'label':(city).title()
+                })
+
+        dataObjectFilterList['states'] = []
+        for state in states_ut_india:
+            dataObjectFilterList['states'].append({
+                'value':state,
+                'label':(state).title()
+                })
+
+
+        # to update filters - start
+
+        state = request.GET.get('state', None)
+        city = request.GET.get('city', None)
+        search = request.GET.get('search', None)
+        sort_by = request.GET.get('sort_by', None)
+        order = request.GET.get('order', None)
+        is_all = request.GET.get('is_all', None)
+
+        if state !=None and state !="" and state != "none":
+            state_list = state.split(",")
+            objects = objects.filter(vendor__state__in=state_list)
+
+        if city !=None and city !="" and city != "none":
+            city_list = city.split(",")
+            objects = objects.filter(vendor__city__in=city_list)
+
+        if search !=None and search !="" and search != "none":
+            objects = objects.filter(Q(company_name__icontains=search) | Q(owner_name__icontains=search))
+
+        if sort_by !=None and sort_by !="" and sort_by != "none":
+            if order == "asc":
+                objects = objects.order_by(sort_by)
+            else:
+                objects = objects.order_by("-" + sort_by)
+
+        # to update filters - end
+
+        # Setting up pagination
+        if is_all != 0 and is_all !=None and is_all != "":
+            pagination_out = pagination(object=objects,request=request)
+        else:
+            pagination_out = {'object':objects,'num_pages':1,'total_records':objects.count()}
+
+
+        object_serializer = dataObjectSerializer(pagination_out['object'], many=True)
+        
+        num_pages = pagination_out['num_pages']
+        total_records = pagination_out['total_records']
+        data = object_serializer.data
+        filters = dataObjectFilterList
+        success = True
+        message = "Found "+ dataObjectFriendlyName +" Records"
+        obj = {
+                'success':success,
+                'filters':filters,
+                'num_pages':num_pages,
+                'total_records':total_records,
+                'message':message,
+                'data':data
+                }
+
+        return JsonResponse(obj, safe=False)        
+
+    def object_list_vendor_item_v1(request,id):
+        dataObject = VendorItem
+        dataObjectFriendlyName = "Vendor Item"
+
+        dataObjectFilterList = {}
+        dataObjectSerializer = VendorItemSerializer  
+        natural_key_1 = 'vendor'
+        natural_key_2 = 'item'
+        # to update - end
+        objects = dataObject.objects.filter(vendor__id = id)
+        dataObjectFilterList['sort_by'] = [
+                        {'value':'item__name','label':'Item Name'},
+                        # {'value':'sub_category','label':'Sub Category'},
+                    ]
+        dataObjectFilterList['order_by'] = [{'value':'asc','label':'Ascending'},
+                        {'value':'desc','label':'Descending'}]
+
+        category_list = ItemCategory.objects.all()
+        dataObjectFilterList['category'] = []
+        for item in category_list:
+            dataObjectFilterList['category'].append({
+                'value':item.id,
+                'label':(item.category + " | " + item.sub_category).title()
+                })
+
+
+        objects = dataObject.objects.filter(item__id = id)
+
+        # to update filters - start
+        category = request.GET.get('category', None)
+        search = request.GET.get('search', None)
+        sort_by = request.GET.get('sort_by', None)
+        order = request.GET.get('order', None)
+        is_all = request.GET.get('is_all', None)
+
+        if category !=None and category !="" and category != "none":
+            category_list = category.split(",")
+            objects = objects.filter(item__category__in=category_list)
+
+        if search !=None and search !="" and search != "none":
+            objects = objects.filter(Q(item__name__icontains=search))
+
+        if sort_by !=None and sort_by !="" and sort_by != "none":
+            if order == "asc":
+                objects = objects.order_by(sort_by)
+            else:
+                objects = objects.order_by("-" + sort_by)
+
+        # to update filters - end
+
+        # Setting up pagination
+        if is_all != 0 and is_all !=None and is_all != "":
+            pagination_out = pagination(object=objects,request=request)
+        else:
+            pagination_out = {'object':objects,'num_pages':1,'total_records':objects.count()}
+
+
+        object_serializer = dataObjectSerializer(pagination_out['object'], many=True)
+        
+        num_pages = pagination_out['num_pages']
+        total_records = pagination_out['total_records']
+        data = object_serializer.data
+        filters = dataObjectFilterList
+        success = True
+        message = "Found "+ dataObjectFriendlyName +" Records"
+        obj = {
+                'success':success,
+                'filters':filters,
+                'num_pages':num_pages,
+                'total_records':total_records,
+                'message':message,
+                'data':data
+                }
+
+        return JsonResponse(obj, safe=False)        
+
+    @api_view(['GET', 'PUT', 'DELETE'])
+    def object_detail_v1(request, id):
+        
+        # to update - start
+        dataObject = VendorItem
+        dataObjectFriendlyName = "Vendor Item"
+        dataObjectSerializer = VendorItemSerializer    
+        # to update - end
+
+        try: 
+            object = dataObject.objects.get(id=id) 
+        except dataObject.DoesNotExist: 
+            message = 'The ' + dataObjectFriendlyName + ' does not exist'
+            success = False
+            obj = {
+                    'message': message,
+                    'success': success
+                }
+            return JsonResponse(obj, status=status.HTTP_404_NOT_FOUND) 
+    
+        if request.method == 'GET': 
+            object_serializer = dataObjectSerializer(object) 
+            message = dataObjectFriendlyName + " Found!"
+            success = True
+            data = object_serializer.data
+            obj ={
+                    'success':success,
+                    'message':message,
+                    'data':data
+                }
+            return JsonResponse(obj) 
+    
+        elif request.method == 'PUT': 
+            object_data = JSONParser().parse(request) 
+            object_serializer = dataObjectSerializer(object, data=object_data) 
+            if object_serializer.is_valid(): 
+                object_serializer.save() 
+                success = True
+                data = object_serializer.data
+                message = dataObjectFriendlyName + " Updated!"
+                obj ={
+                    'success':success,
+                    'message':message,
+                    'data':data
+                }
+                return JsonResponse(obj) 
+            else:
+                success = False
+                errors = object_serializer.errors
+                message = "Unable to update " + dataObjectFriendlyName
+                obj = {
+                    'success':False,
+                    'message':message,
+                    'errors': errors
+                }
+            return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST) 
+    
+        elif request.method == 'DELETE': 
+            object.delete() 
+            success = True
+            message = dataObjectFriendlyName + ' was deleted successfully!'
+            obj= {
+                'success':True,
+                'message': message
+                }
+
+            return JsonResponse(obj)
+        
