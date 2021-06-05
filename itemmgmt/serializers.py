@@ -33,6 +33,7 @@ class ItemSerializer(serializers.ModelSerializer):
     dimensions = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     sell_price = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     category = serializers.CharField(required=False, allow_null=True, allow_blank=True,write_only=True)
+    vendorlist = serializers.CharField(required=False, allow_null=True, allow_blank=True,read_only=True)
     category_details = ItemCategorySerializer(source="category",read_only=True)
     image_details = ItemImageSerializer(source='itemimage_set', many=True,read_only=True)   
 
@@ -50,8 +51,9 @@ class ItemSerializer(serializers.ModelSerializer):
         try:
             catObject = ItemCategory.objects.get(id=value)
             return catObject
-        except ValueError:
+        except:
             raise serializers.ValidationError('You must supply an valid category id')
+
 
     def validate_name(self,value):
         return cleanstring(value).lower()
@@ -64,7 +66,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ('id','name','description','dimensions','sell_price','category','category_details','image_details')
+        fields = ('id','name','description','vendorlist','dimensions','sell_price','category','category_details','image_details')
 
 
 class VendorItemSerializer(serializers.ModelSerializer):
@@ -88,7 +90,7 @@ class VendorItemSerializer(serializers.ModelSerializer):
         try:
             venObject = Vendor.objects.get(id=value)
             return venObject
-        except ValueError:
+        except:
             raise serializers.ValidationError('You must supply an valid vendor id')
 
     def validate_item(self,value):
@@ -97,7 +99,7 @@ class VendorItemSerializer(serializers.ModelSerializer):
         try:
             itemObject = Item.objects.get(id=value)
             return itemObject
-        except ValueError:
+        except:
             raise serializers.ValidationError('You must supply an valid item id')
 
 

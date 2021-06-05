@@ -43,6 +43,7 @@ urlpatterns = [
     url(r'^api/v1/items$', itemMgmt.object_list_v1),
     url(r'^api/v1/items/(?P<id>[0-9]+)$', itemMgmt.object_detail_v1),
     url(r'^api/v1/itemimageupload/(?P<id>[0-9]+)$', itemMgmt.upload_item_image),
+    url(r'^api/v1/itemimagedelete/(?P<id>[0-9]+)$', itemMgmt.delete_item_image),
 
     url(r'^api/v1/vendoritemspair$', vendorItemMgmt.object_create_v1),
     url(r'^api/v1/vendoritemspair/(?P<id>[0-9]+)$', vendorItemMgmt.object_detail_v1),

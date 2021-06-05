@@ -329,13 +329,27 @@ class itemMgmt:
                 count = -1
 
             object_serializer = dataObjectSerializer(data=object_data)
-            
             if count == 0:
                 if object_serializer.is_valid():
                     object_serializer.save()
+
+
                     success = True
                     message = dataObjectFriendlyName + " Created!"
                     data = object_serializer.data
+                    # print(data)
+                    itemObj = dataObject.objects.get(id=data['id'])
+                    try:
+                        vendor_id_list = object_data['vendorlist'].split(",")
+                        vendObjects = Vendor.objects.filter(id__in=vendor_id_list)
+                        for object in vendObjects:
+                            VendorItem.objects.create(
+                                item = itemObj,
+                                vendor = object
+                            )
+                    except:
+                        None
+                    
                     obj= {
                         'success':True,
                         'message':message,
@@ -436,6 +450,35 @@ class itemMgmt:
                 success = True
                 data = object_serializer.data
                 message = dataObjectFriendlyName + " Updated!"
+                itemObj = dataObject.objects.get(id=data['id'])
+                # try:
+                vendor_id_list = object_data['vendorlist'].split(",")
+                # print(len(vendor_id_list))
+                if len(vendor_id_list)>0 and vendor_id_list[0] != "":
+                    vendObjects = Vendor.objects.filter(id__in=vendor_id_list)
+                else:
+                    vendObjects = []
+                ExistingVendorItems = VendorItem.objects.filter(item = itemObj)
+                existingVendors = []
+                for object in ExistingVendorItems:
+                    if object.vendor in vendObjects:
+                        existingVendors.append(object.vendor)
+                    else:
+                        object.delete()
+                
+                
+
+                for obj in vendObjects:
+                    if obj in existingVendors:
+                        pass
+                    else:
+                        VendorItem.objects.create(
+                        item = itemObj,
+                        vendor = obj
+                        )
+                # except:
+                #     None
+                
                 obj ={
                     'success':success,
                     'message':message,
@@ -525,7 +568,7 @@ class itemMgmt:
             count = count + 1
             data.append({ 'id':fileupload.id,
                             'file_name':fileupload.file_name,
-                           'file_path':fileupload.path,
+                           'path':fileupload.path,
                            'file_type':fileupload.file_type
                         })
 
@@ -549,6 +592,44 @@ class itemMgmt:
                     }
 
         return JsonResponse(obj, safe=False)
+
+    @api_view(['DELETE'])
+    def delete_item_image(request,id):
+        dataObject = ItemImage
+        dataObjectFriendlyName = "Item Image"
+        bucket_name = "thedecorshop"
+        # destination = open('filename.data', 'wb')
+        
+        obj = {}
+        data = []
+        try: 
+            object = dataObject.objects.get(id=id) 
+
+        except dataObject.DoesNotExist: 
+            message = 'The ' + dataObjectFriendlyName + ' does not exist'
+            success = False
+            obj = {
+                    'message': message,
+                    'success': success
+                }
+            return JsonResponse(obj, status=status.HTTP_404_NOT_FOUND) 
+        # print(len(file))
+
+        session = boto3.Session(
+            aws_access_key_id = AWS_S3_ACCESS_KEY,
+            aws_secret_access_key = AWS_S3_SECRET_KEY,
+        )
+        s3 = session.resource('s3')
+        print(object.file_name)
+        s3.Object(bucket_name, 'images/' + object.file_name).delete()
+        object.delete()
+        success = True
+        message = dataObjectFriendlyName + ' was deleted successfully!'
+        obj= {
+            'success':True,
+            'message': message
+            }
+        return JsonResponse(obj)
 
 
 class vendorItemMgmt:
@@ -764,7 +845,8 @@ class vendorItemMgmt:
         sort_by = request.GET.get('sort_by', None)
         order = request.GET.get('order', None)
         is_all = request.GET.get('is_all', None)
-
+        objects = dataObject.objects.filter(item__id = id)
+        
         if state !=None and state !="" and state != "none":
             state_list = state.split(",")
             objects = objects.filter(vendor__state__in=state_list)

@@ -5,3 +5,4 @@ from itemmgmt.models import *
 admin.site.register(ItemCategory)
 admin.site.register(Item)
 admin.site.register(ItemImage)
+admin.site.register(VendorItem)
