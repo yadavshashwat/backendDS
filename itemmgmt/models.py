@@ -18,6 +18,7 @@ class Item(BaseModel):
     description = models.CharField(max_length=500,null=True,blank=True)
     dimensions  = models.CharField(max_length=200,null=True,blank=True)
     sell_price  = models.IntegerField(null=True,blank=True)
+    status      =  models.CharField(max_length=100,null=True,blank=True,default="to_be_updated")
     category    = models.ForeignKey(ItemCategory,
                                 on_delete=models.SET_NULL,
                                 null=True,blank=True)

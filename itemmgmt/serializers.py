@@ -36,7 +36,8 @@ class ItemSerializer(serializers.ModelSerializer):
     vendorlist = serializers.CharField(required=False, allow_null=True, allow_blank=True,read_only=True)
     category_details = ItemCategorySerializer(source="category",read_only=True)
     image_details = ItemImageSerializer(source='itemimage_set', many=True,read_only=True)   
-
+    status = serializers.CharField(required=False, allow_null=True, allow_blank=True)
+    
     def validate_sell_price(self, value):
         if not value:
             return None
@@ -66,7 +67,7 @@ class ItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Item
-        fields = ('id','name','description','vendorlist','dimensions','sell_price','category','category_details','image_details')
+        fields = ('id','name','description','vendorlist','dimensions','status','sell_price','category','category_details','image_details')
 
 
 class VendorItemSerializer(serializers.ModelSerializer):

@@ -47,6 +47,7 @@ class itemCatMgmt:
             dataObjectFilterList['category'] = sorted(dataObjectFilterList['category'], key=operator.itemgetter('value'))
             
 
+
             objects = dataObject.objects.all()
 
             # to update filters - start
@@ -165,7 +166,7 @@ class itemCatMgmt:
                     'message': message,
                     'errors': errors
                 }
-                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse(obj)
       
         elif request.method == 'DELETE':
             count = dataObject.objects.all().delete()
@@ -232,7 +233,7 @@ class itemCatMgmt:
                     'message':message,
                     'errors': errors
                 }
-            return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST) 
+            return JsonResponse(obj) 
     
         elif request.method == 'DELETE': 
             object.delete() 
@@ -273,12 +274,20 @@ class itemMgmt:
                     'value':item.id,
                     'label':(item.category + " | " + item.sub_category).title()
                     })
-    
+
+            dataObjectFilterList['status'] = [
+                                            {'value':'to_be_updated','label':'To Be Updated'},
+                                            {'value':'rejected','label':'Rejected'},
+                                            {'value':'shortlisted','label':'Shortlisted'},
+                                            {'value':'ready','label':'Ready'}
+                                            ]
+
             objects = dataObject.objects.all()
 
             # to update filters - start
 
             category = request.GET.get('category', None)
+            statusitem = request.GET.get('status', None)
             search = request.GET.get('search', None)
             sort_by = request.GET.get('sort_by', None)
             order = request.GET.get('order', None)
@@ -286,6 +295,10 @@ class itemMgmt:
             if category !=None and category !="" and category != "none":
                 category_list = category.split(",")
                 objects = objects.filter(category__in=category_list)
+
+            if statusitem !=None and statusitem !="" and statusitem != "none":
+                status_list = statusitem.split(",")
+                objects = objects.filter(status__in=status_list)
 
             if search !=None and search !="" and search != "none":
                 objects = objects.filter(Q(name__icontains=search) | Q(description__icontains=search))
@@ -332,8 +345,6 @@ class itemMgmt:
             if count == 0:
                 if object_serializer.is_valid():
                     object_serializer.save()
-
-
                     success = True
                     message = dataObjectFriendlyName + " Created!"
                     data = object_serializer.data
@@ -397,7 +408,7 @@ class itemMgmt:
                     'message': message,
                     'errors': errors
                 }
-                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse(obj)
       
         elif request.method == 'DELETE':
             count = dataObject.objects.all().delete()
@@ -451,33 +462,33 @@ class itemMgmt:
                 data = object_serializer.data
                 message = dataObjectFriendlyName + " Updated!"
                 itemObj = dataObject.objects.get(id=data['id'])
-                # try:
-                vendor_id_list = object_data['vendorlist'].split(",")
-                # print(len(vendor_id_list))
-                if len(vendor_id_list)>0 and vendor_id_list[0] != "":
-                    vendObjects = Vendor.objects.filter(id__in=vendor_id_list)
-                else:
-                    vendObjects = []
-                ExistingVendorItems = VendorItem.objects.filter(item = itemObj)
-                existingVendors = []
-                for object in ExistingVendorItems:
-                    if object.vendor in vendObjects:
-                        existingVendors.append(object.vendor)
+                try:
+                    vendor_id_list = object_data['vendorlist'].split(",")
+                    # print(len(vendor_id_list))
+                    if len(vendor_id_list)>0 and vendor_id_list[0] != "":
+                        vendObjects = Vendor.objects.filter(id__in=vendor_id_list)
                     else:
-                        object.delete()
-                
-                
+                        vendObjects = []
+                    ExistingVendorItems = VendorItem.objects.filter(item = itemObj)
+                    existingVendors = []
+                    for object in ExistingVendorItems:
+                        if object.vendor in vendObjects:
+                            existingVendors.append(object.vendor)
+                        else:
+                            object.delete()
+                    
+                    
 
-                for obj in vendObjects:
-                    if obj in existingVendors:
-                        pass
-                    else:
-                        VendorItem.objects.create(
-                        item = itemObj,
-                        vendor = obj
-                        )
-                # except:
-                #     None
+                    for obj in vendObjects:
+                        if obj in existingVendors:
+                            pass
+                        else:
+                            VendorItem.objects.create(
+                            item = itemObj,
+                            vendor = obj
+                            )
+                except:
+                    None
                 
                 obj ={
                     'success':success,
@@ -494,7 +505,7 @@ class itemMgmt:
                     'message':message,
                     'errors': errors
                 }
-            return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST) 
+            return JsonResponse(obj) 
     
         elif request.method == 'DELETE': 
             object.delete() 
@@ -779,7 +790,7 @@ class vendorItemMgmt:
                 'message': message,
                 'errors': errors
             }
-            return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+            return JsonResponse(obj)
     
         # elif request.method == 'DELETE':
         #     count = dataObject.objects.all().delete()
@@ -807,7 +818,8 @@ class vendorItemMgmt:
                         {'value':'vendor__owner_name','label':'Owner Name'},
                         {'value':'vendor__contact_name','label':'Other Contact Name'},
                         {'value':'vendor__city','label':'City'},
-                        {'value':'vendor__state','label':'State'}
+                        {'value':'vendor__state','label':'State'},
+                        {'value':'cost_price','label':'Cost Price'}
                     ]
         dataObjectFilterList['order_by'] = [{'value':'asc','label':'Ascending'},
                         {'value':'desc','label':'Descending'}]
@@ -904,6 +916,7 @@ class vendorItemMgmt:
         objects = dataObject.objects.filter(vendor__id = id)
         dataObjectFilterList['sort_by'] = [
                         {'value':'item__name','label':'Item Name'},
+                        {'value':'cost_price','label':'Cost Price'},
                         # {'value':'sub_category','label':'Sub Category'},
                     ]
         dataObjectFilterList['order_by'] = [{'value':'asc','label':'Ascending'},
@@ -917,11 +930,19 @@ class vendorItemMgmt:
                 'label':(item.category + " | " + item.sub_category).title()
                 })
 
+        dataObjectFilterList['status'] = [
+                                        {'value':'to_be_updated','label':'To Be Updated'},
+                                        {'value':'rejected','label':'Rejected'},
+                                        {'value':'shortlisted','label':'Shortlisted'},
+                                        {'value':'ready','label':'Ready'}
+                                        ]
 
-        objects = dataObject.objects.filter(item__id = id)
+
+        # objects = dataObject.objects.filter(item__id = id)
 
         # to update filters - start
         category = request.GET.get('category', None)
+        statusitem = request.GET.get('status', None)
         search = request.GET.get('search', None)
         sort_by = request.GET.get('sort_by', None)
         order = request.GET.get('order', None)
@@ -930,6 +951,11 @@ class vendorItemMgmt:
         if category !=None and category !="" and category != "none":
             category_list = category.split(",")
             objects = objects.filter(item__category__in=category_list)
+
+        if statusitem !=None and statusitem !="" and statusitem != "none":
+            status_list = statusitem.split(",")
+            objects = objects.filter(item__status__in=status_list)
+
 
         if search !=None and search !="" and search != "none":
             objects = objects.filter(Q(item__name__icontains=search))
@@ -1023,7 +1049,7 @@ class vendorItemMgmt:
                     'message':message,
                     'errors': errors
                 }
-            return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST) 
+            return JsonResponse(obj) 
     
         elif request.method == 'DELETE': 
             object.delete() 

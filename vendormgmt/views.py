@@ -176,7 +176,7 @@ class vendorMgmt:
                     'message': message,
                     'errors': errors
                 }
-                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse(obj)
 
         
         elif request.method == 'DELETE':
@@ -244,7 +244,7 @@ class vendorMgmt:
                     'message':message,
                     'errors': errors
                 }
-            return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST) 
+            return JsonResponse(obj) 
     
         elif request.method == 'DELETE': 
             object.delete() 

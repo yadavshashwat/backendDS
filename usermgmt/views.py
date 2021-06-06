@@ -9,6 +9,7 @@ from usermgmt.serializers import *
 from overall.views import *
 from django.views.decorators.csrf import csrf_exempt
 from mailing.views import * 
+from django.db.models import Q
 
 
 
@@ -30,10 +31,31 @@ class userMgmt:
         if request.method == 'GET':
             objects = dataObject.objects.all()
 
+
             # to update filters - start
-            name = request.GET.get('name', None)
-            if name is not None:
-                objects = objects.filter(name__icontains=name)
+            dataObjectFilterList['sort_by'] = [
+                            {'value':'first_name','label':'First Name'},
+                            {'value':'last_name','label':'Last Name'},
+                            {'value':'email','label':'Email'},
+                            {'value':'phone_number','label':'Phone'},
+                        ]
+            dataObjectFilterList['order_by'] = [{'value':'asc','label':'Ascending'},
+                            {'value':'desc','label':'Descending'}]
+
+
+
+            search = request.GET.get('search', None)
+            sort_by = request.GET.get('sort_by', None)
+            order = request.GET.get('order', None)
+
+            if search !=None and search !="" and search != "none":
+                objects = objects.filter(Q(first_name__icontains=search) | Q(last_name__icontains=search) | Q(email__icontains=search))
+
+            if sort_by !=None and sort_by !="" and sort_by != "none":
+                if order == "asc":
+                    objects = objects.order_by(sort_by)
+                else:
+                    objects = objects.order_by("-" + sort_by)
             
             # to update filters - end
 
@@ -127,7 +149,7 @@ class userMgmt:
                     'message': message,
                     'errors': errors
                 }
-                return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse(obj)
 
 
 
@@ -215,7 +237,7 @@ class userMgmt:
                     'message':message,
                     'errors': errors
                 }
-            return JsonResponse(obj, status=status.HTTP_400_BAD_REQUEST) 
+            return JsonResponse(obj) 
     
         elif request.method == 'DELETE': 
             if not object.is_superuser:
