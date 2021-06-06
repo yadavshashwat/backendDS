@@ -37,6 +37,7 @@ urlpatterns = [
     url(r'^api/v1/vendors$', vendorMgmt.object_list_v1),
     url(r'^api/v1/vendors/(?P<id>[0-9]+)$', vendorMgmt.object_detail_v1),
     url(r'^api/v1/vendordocupload/(?P<id>[0-9]+)$', vendorMgmt.upload_document),
+    url(r'^api/v1/vendordocdelete/(?P<id>[0-9]+)$', vendorMgmt.delete_document),
 
     url(r'^api/v1/itemcats$', itemCatMgmt.object_list_v1),
     url(r'^api/v1/itemcats/(?P<id>[0-9]+)$', itemCatMgmt.object_detail_v1),

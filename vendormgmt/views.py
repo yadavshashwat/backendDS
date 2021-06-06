@@ -40,13 +40,14 @@ class vendorMgmt:
 
             dataObjectFilterList['source'] = []
 
+            dataObjectFilterList['source'] = {v['value']:v for v in dataObjectFilterList['source']}.values()
+            dataObjectFilterList['source'] = sorted(dataObjectFilterList['source'], key=operator.itemgetter('value'))
+
             for source in objects:
                 dataObjectFilterList['source'].append({
                     'value':source.source,
                     'label':(source.source).title()
                     })
-            dataObjectFilterList['source'] = {v['value']:v for v in dataObjectFilterList['source']}.values()
-            dataObjectFilterList['source'] = sorted(dataObjectFilterList['source'], key=operator.itemgetter('value'))
 
             dataObjectFilterList['cities'] = []
             for city in cities_india:
@@ -199,7 +200,9 @@ class vendorMgmt:
         # to update - start
         dataObject = Vendor
         dataObjectFriendlyName = "Vendor"
-        dataObjectSerializer = VendorSerializer    
+        dataObjectSerializer = VendorSerializer  
+        dataObjectFilterList = {}
+
         # to update - end
 
         try: 
@@ -218,10 +221,37 @@ class vendorMgmt:
             message = dataObjectFriendlyName + " Found!"
             success = True
             data = object_serializer.data
+
+            dataObjectFilterList['source'] = []
+
+            dataObjectFilterList['source'] = {v['value']:v for v in dataObjectFilterList['source']}.values()
+            dataObjectFilterList['source'] = sorted(dataObjectFilterList['source'], key=operator.itemgetter('value'))
+
+            for source in Vendor.objects.all():
+                dataObjectFilterList['source'].append({
+                    'value':source.source,
+                    'label':(source.source).title()
+                    })
+
+            dataObjectFilterList['cities'] = []
+            for city in cities_india:
+                dataObjectFilterList['cities'].append({
+                    'value':city,
+                    'label':(city).title()
+                    })
+
+            dataObjectFilterList['states'] = []
+            for state in states_ut_india:
+                dataObjectFilterList['states'].append({
+                    'value':state,
+                    'label':(state).title()
+                    })
+            
             obj ={
                     'success':success,
                     'message':message,
-                    'data':data
+                    'data':data,
+                    'filters':dataObjectFilterList
                 }
             return JsonResponse(obj) 
     

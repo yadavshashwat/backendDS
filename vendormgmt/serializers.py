@@ -2,7 +2,12 @@ from rest_framework import serializers
 from vendormgmt.models import *
 from overall.views import *
 
- 
+class VendorDocSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VendorDocuments
+        fields = ('id','path','file_name','friendly_name')
+
+
 class VendorSerializer(serializers.ModelSerializer):
     contact_phone = serializers.CharField(required=False, allow_null=True, allow_blank=True)
     contact_name = serializers.CharField(required=False, allow_null=True, allow_blank=True)
@@ -14,6 +19,7 @@ class VendorSerializer(serializers.ModelSerializer):
     owner_name = serializers.CharField(required=False, allow_null=True,allow_blank=True)
     owner_phone = serializers.CharField(required=False, allow_null=True,allow_blank=True)
     company_name = serializers.CharField(required=True, allow_null=False,allow_blank=False)
+    document_details = VendorDocSerializer(source='vendordocuments_set', many=True,read_only=True)   
     
     def validate_contact_phone(self, value):
         if not value:
