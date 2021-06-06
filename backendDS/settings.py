@@ -27,7 +27,9 @@ SECRET_KEY = 'django-insecure-hiwz@m-d#=yu7_occ*du7g$=#s8elwa^=)cohl0e2rhf_l^!c1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['www.thedecorshop.in']
+ALLOWED_HOSTS = ['www.thedecorshop.in',
+                'vendor.thedecorshop.in',
+                'localhost']
 
 
 # Application definition
