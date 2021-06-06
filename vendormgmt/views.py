@@ -9,6 +9,10 @@ from vendormgmt.serializers import *
 from overall.views import *
 import operator
 from overall.models import cities_india, states_ut_india
+from backendDS.credentials import AWS_S3_ACCESS_KEY, AWS_S3_SECRET_KEY
+import time
+import boto3
+import os
 
 class vendorMgmt:
     @api_view(['GET', 'POST', 'DELETE'])
@@ -257,4 +261,128 @@ class vendorMgmt:
 
             return JsonResponse(obj)
         
+    @api_view(['POST'])
+    def upload_document(request,id):
+        dataObject = Vendor
+        dataObjectFriendlyName = "Vendor"
+        bucket_name = "thedecorshop"
+        files = request.FILES.getlist("file")
+        # file_name = request.POST.get('file_name', None)
+        # print(file_name)
+        # print(files)
+        # files_name = request.FILES.getlist("file")
+
+        # destination = open('filename.data', 'wb')
+        # print(files)
+        # print(len(files))
+        obj = {}
+        data = []
+
+        try: 
+            object = dataObject.objects.get(id=id) 
+
+        except dataObject.DoesNotExist: 
+            message = 'The ' + dataObjectFriendlyName + ' does not exist'
+            success = False
+            obj = {
+                    'message': message,
+                    'success': success
+                }
+            return JsonResponse(obj, status=status.HTTP_404_NOT_FOUND) 
+        # print(len(file))
+        
+        count = 0
+        for file in files:
+            split_tup = os.path.splitext(file.name)
+            destination = open('filename.data', 'wb')
+            for chunk in file.chunks():
+                destination.write(chunk)
+            destination.close()
+            session = boto3.Session(
+                aws_access_key_id = AWS_S3_ACCESS_KEY,
+                aws_secret_access_key = AWS_S3_SECRET_KEY,
+            )
+            s3 = session.resource('s3')
+            ts = time.time()
+            final_filename = "doc-" + random_str_generator(4) + str(ts).replace(".", "") + split_tup[1]
+            s3.Object(bucket_name, 'documents/' + final_filename).put(Body=open('filename.data', 'rb'))
+            filepath = "https://"+bucket_name +".s3.ap-south-1.amazonaws.com/documents/" + final_filename
+            
+
+            fileupload = VendorDocuments.objects.create(
+                                                file_name  = final_filename,
+                                                path       = filepath,
+                                                vendor       = object,
+                                                friendly_name = split_tup[0]
+                                                )
+        
+
+            if os.path.exists('filename.data'):
+                os.remove('filename.data')
+            count = count + 1
+            data.append({ 'id':fileupload.id,
+                            'file_name':fileupload.file_name,
+                           'path':fileupload.path,
+                           'friendly_name':fileupload.friendly_name
+                        })
+
+        if count == len(files):
+            success = True
+            message = "Uploaded "+ str(count) +" of " + str(len(files)) +" documents"
+            obj = {
+                    'success':success,
+                    'object_id':object.id,
+                    'message':message,
+                    'data':data   
+                    }
+        else:
+            success = False
+            message = "Uploaded "+ str(count) +" of " + str(len(files)) +" documents"
+            obj = {
+                    'success':success,
+                    'object_id':object.id,
+                    'message':message,
+                    'data':data   
+                    }
+
+        return JsonResponse(obj, safe=False)
+
+    @api_view(['DELETE'])
+    def delete_document(request,id):
+        dataObject = VendorDocuments
+        dataObjectFriendlyName = "Vendor Document"
+        bucket_name = "thedecorshop"
+        # destination = open('filename.data', 'wb')
+        
+        obj = {}
+        data = []
+        try: 
+            object = dataObject.objects.get(id=id) 
+
+        except dataObject.DoesNotExist: 
+            message = 'The ' + dataObjectFriendlyName + ' does not exist'
+            success = False
+            obj = {
+                    'message': message,
+                    'success': success
+                }
+            return JsonResponse(obj, status=status.HTTP_404_NOT_FOUND) 
+        # print(len(file))
+
+        session = boto3.Session(
+            aws_access_key_id = AWS_S3_ACCESS_KEY,
+            aws_secret_access_key = AWS_S3_SECRET_KEY,
+        )
+        s3 = session.resource('s3')
+        print(object.file_name)
+        s3.Object(bucket_name, 'documents/' + object.file_name).delete()
+        object.delete()
+        success = True
+        message = dataObjectFriendlyName + ' was deleted successfully!'
+        obj= {
+            'success':True,
+            'message': message
+            }
+        return JsonResponse(obj)
+
             

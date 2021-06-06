@@ -526,8 +526,8 @@ class itemMgmt:
         bucket_name = "thedecorshop"
         files = request.FILES.getlist("file")
         # destination = open('filename.data', 'wb')
-        print(files)
-        print(len(files))
+        # print(files)
+        # print(len(files))
         obj = {}
         data = []
         try: 
@@ -545,6 +545,7 @@ class itemMgmt:
         totalOldImages = ItemImage.objects.filter(item = object).count()
         count = 0
         for file in files:
+            print(file)
             destination = open('filename.data', 'wb')
             for chunk in file.chunks():
                 destination.write(chunk)
