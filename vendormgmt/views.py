@@ -224,14 +224,14 @@ class vendorMgmt:
 
             dataObjectFilterList['source'] = []
 
-            dataObjectFilterList['source'] = {v['value']:v for v in dataObjectFilterList['source']}.values()
-            dataObjectFilterList['source'] = sorted(dataObjectFilterList['source'], key=operator.itemgetter('value'))
-
             for source in Vendor.objects.all():
                 dataObjectFilterList['source'].append({
                     'value':source.source,
                     'label':(source.source).title()
                     })
+            dataObjectFilterList['source'] = {v['value']:v for v in dataObjectFilterList['source']}.values()
+            dataObjectFilterList['source'] = sorted(dataObjectFilterList['source'], key=operator.itemgetter('value'))
+
 
             dataObjectFilterList['cities'] = []
             for city in cities_india:

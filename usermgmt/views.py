@@ -394,7 +394,8 @@ class userMgmt:
         obj['message'] = message
         response = HttpResponse(json.dumps(obj), content_type='application/json')
         return response
-
+    
+    @api_view(['POST'])
     def send_password_reset(request):
         obj = {}
         obj['success'] = False
@@ -403,14 +404,15 @@ class userMgmt:
         try:
             user = DecorShopUser.objects.get(email=email,is_active=True)
             if user:
-                print('a')
                 randstring = str(user.id) + random_str_generator()
                 message = "Reset Request Success"
                 user.secret_string = randstring
                 user.save()
-                print('b')
-                send_password_reset_email(name=user.first_name, email=user.email, secret_string=randstring.encode('utf-8'))
-                print('c')
+                out = send_password_reset_email(name=user.first_name, email=user.email, secret_string=randstring)
+                if out:
+                    message = "Reset Email Sent"
+                else:
+                    message = "Failed Sending Reset Email"
             else:
                 message = "User Doesn't exist"
         except:
@@ -420,24 +422,29 @@ class userMgmt:
         obj['message'] = message
         response = HttpResponse(json.dumps(obj), content_type='application/json')
         return response
-
+    @api_view(['POST'])
     def reset_pass(request):
         obj = {}
         obj['success'] = False
         obj['data'] = {}
         obj['auth'] = False
-
         password        = request.POST.get("pass", None)    
         secret_string   = request.POST.get("sec_string", None) 
         try:
+            print(0)
+            print(password)
+            print(secret_string)
             user = DecorShopUser.objects.get(secret_string=secret_string,is_active=True)
+            print(1)
             user.set_password(password)
+            print(2)
             randstring = str(user.id) + random_str_generator()
+            print(3)
             randstring2 = str(user.id) + random_str_generator()
             user.secret_string = randstring
             user.auth_token = randstring2
             user.save()
-
+            print(4)
             obj['data']['auth_token'] = randstring2
             obj['data']['id'] = user.id
             obj['data']['first_name'] = user.first_name
@@ -446,9 +453,11 @@ class userMgmt:
             obj['data']['is_staff'] = user.is_staff
             obj['auth'] = True
             obj['message'] = "Password Reset Success"
+            obj['success'] = True
         except:
             obj['message'] = "Invalid Request Please Try Resetting the Password Again"
-        obj['status'] = True
+            obj['success'] = False
+            obj['auth'] = False
         
         return HttpResponse(json.dumps(obj), content_type='application/json')
     # logging out
