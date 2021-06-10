@@ -62,7 +62,7 @@ def send_password_reset_email(name,email,secret_string,test=True):
     if test:
         link = "http://localhost:3000/adminpanel/passreset/" + str(secret_string)
     else:
-        link = "http://www.thedecorship.in/adminpanel/passreset/" + str(secret_string)
+        link = "http://vendor.thedecorshop.in/adminpanel/passreset/" + str(secret_string)
     html_email = send_reset_link_html(name,link)
     out = send_aws_email(from_email="info@thedecorshop.in",to_email=email,subject="Password Reset | TheDecorShop Admin",content_html=html_email)    
     return out
