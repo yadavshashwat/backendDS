@@ -408,7 +408,7 @@ class userMgmt:
                 message = "Reset Request Success"
                 user.secret_string = randstring
                 user.save()
-                out = send_password_reset_email(name=user.first_name, email=user.email, secret_string=randstring)
+                out = send_password_reset_email(name=user.first_name, email=user.email, secret_string=randstring,test=False)
                 if out:
                     message = "Reset Email Sent"
                 else:
