@@ -94,10 +94,11 @@ class vendorMgmt:
             # to update filters - end
 
             # Setting up pagination
-            if is_all != 0 and is_all !=None and is_all != "":
-                pagination_out = pagination(object=objects,request=request)
-            else:
+            if is_all == 1 or is_all == "1" or is_all == True:
                 pagination_out = {'object':objects,'num_pages':1,'total_records':objects.count()}
+            else:
+                pagination_out = pagination(object=objects,request=request)
+                
             object_serializer = dataObjectSerializer(pagination_out['object'], many=True)
             
             num_pages = pagination_out['num_pages']
